@@ -255,6 +255,57 @@ class NCARLESDataProfile(LESData):
         self.dataset = self._load_dataset()
         self._name = self.dataset.attrs['title']
 
+    def _var_units(
+            self,
+            varname,
+            ):
+        """Return the unit of a variable in NCAR LES
+
+        """
+        var_units = {
+                'stokes':   'm/s',
+                'engsbz':   'm$^2$/s$^2$',
+                'uxym':     'm/s',
+                'vxym':     'm/s',
+                'ups':      'm$^2$/s$^2$',
+                'vps':      'm$^2$/s$^2$',
+                'uvle':     'm$^2$/s$^2$',
+                'wcube':    'm$^3$/s$^3$',
+                'wfour':    'm$^4$/s$^4$',
+                'uwle':     'm$^2$/s$^2$',
+                'vwle':     'm$^2$/s$^2$',
+                'englez':   'm$^2$/s$^2$',
+                'engz':     'm$^2$/s$^2$',
+                'uwsb':     'm$^2$/s$^2$',
+                'vwsb':     'm$^2$/s$^2$',
+                't_rprod':  'm$^2$/s$^3$',
+                't_sprod':  'm$^2$/s$^3$',
+                't_buoy':   'm$^2$/s$^3$',
+                't_wq':     'm$^2$/s$^3$',
+                't_wp':     'm$^2$/s$^3$',
+                't_tau':    'm$^2$/s$^3$',
+                't_tran':   'm$^2$/s$^3$',
+                't_diss':   'm$^2$/s$^3$',
+                't_dsle':   'm$^2$/s$^3$',
+                't_stokes': 'm$^2$/s$^3$',
+                'shrz':     'm$^2$/s$^3$',
+                'triz':     'm$^2$/s$^3$',
+                'dudz':     '1/s',
+                'dvdz':     '1/s',
+                'wxym':     'm/s',
+                'wps':      'm$^2$/s$^2$',
+                'tps':      'K$^2$',
+                'txym':     'K',
+                'tcube':    'K$^3$',
+                'utle':     'K m/s',
+                'vtle':     'K m/s',
+                'wtle':     'K m/s',
+                'utsb':     'K m/s',
+                'vtsb':     'K m/s',
+                'wtsb':     'K m/s',
+                }
+        return var_units[varname]
+
     def _load_dataset(
             self,
             ):
@@ -291,7 +342,7 @@ class NCARLESDataProfile(LESData):
                             var.data,
                             dims=('time', 'z'),
                             coords={'time': time, 'z':z},
-                            attrs={'long_name': var.long_name, 'units': 'none'},
+                            attrs={'long_name': var.long_name, 'units': self._var_units(varname)},
                         )
                     elif 'z_w' in var.coords:
                         # variables at cell interfaces
@@ -299,7 +350,7 @@ class NCARLESDataProfile(LESData):
                             var.data,
                             dims=('time', 'zi'),
                             coords={'time': time, 'zi':zi},
-                            attrs={'long_name': var.long_name, 'units': 'none'},
+                            attrs={'long_name': var.long_name, 'units': self._var_units(varname)},
                         )
                     else:
                         raise IOError('Invalid z coordinate')
@@ -311,7 +362,7 @@ class NCARLESDataProfile(LESData):
                             var.data[:,iscl,:],
                             dims=('time', 'z'),
                             coords={'time': time, 'z':z},
-                            attrs={'long_name': var.long_name, 'units': 'none'},
+                            attrs={'long_name': var.long_name, 'units': self._var_units(varname)},
                         )
                     elif 'z_w' in var.coords:
                         # variables at cell interfaces
@@ -319,7 +370,7 @@ class NCARLESDataProfile(LESData):
                             var.data[:,iscl,:],
                             dims=('time', 'zi'),
                             coords={'time': time, 'zi':zi},
-                            attrs={'long_name': var.long_name, 'units': 'none'},
+                            attrs={'long_name': var.long_name, 'units': self._var_units(varname)},
                         )
                     else:
                         raise IOError('Invalid z coordinate')
