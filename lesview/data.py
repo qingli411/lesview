@@ -4,6 +4,7 @@
 
 import xarray as xr
 import numpy as np
+import pandas as pd
 
 #--------------------------------
 # LESData
@@ -227,3 +228,102 @@ class PALMDataVolume(LESData):
                 # attributes
                 out.attrs['title'] = fdata.attrs['title']
         return out
+
+#--------------------------------
+# NCARLESDataProfile
+#--------------------------------
+
+class NCARLESDataProfile(LESData):
+
+    """A data type for NCAR LES profile data
+
+    """
+
+    def __init__(
+            self,
+            filepath = '',
+            year_ref = 2000,
+            ):
+        """Initialization
+
+        :filepath:  (str) path of the PALM profile data file
+        :year_ref:  (int) reference year for time
+
+        """
+        super(NCARLESDataProfile, self).__init__(filepath)
+        self._year_ref = year_ref
+        self.dataset = self._load_dataset()
+        self._name = self.dataset.attrs['title']
+
+    def _load_dataset(
+            self,
+            ):
+        """Load data set
+
+        """
+        with xr.open_dataset(self._filepath) as fdata:
+            # time dimension, use reference time
+            time_ref_str = '{:0d}-01-01T00:00:00'.format(self._year_ref)
+            time = pd.to_datetime(fdata.time.data, unit='s', origin=time_ref_str)
+            # depth
+            zu = fdata.coords['z_u']
+            zw = fdata.coords['z_w']
+            z = xr.DataArray(
+                zu.data,
+                dims=('z'),
+                coords={'z': zu.data},
+                attrs={'long_name': 'z', 'units': 'm'},
+                )
+            zi = xr.DataArray(
+                zw.data,
+                dims=('zi'),
+                coords={'zi': zw.data},
+                attrs={'long_name': 'zi', 'units': 'm'},
+                )
+            # define output dataset
+            out = xr.Dataset()
+            for varname in fdata.data_vars:
+                var = fdata.data_vars[varname]
+                if var.ndim == 2:
+                    if 'z_u' in var.coords:
+                        # variables at cell centers
+                        out[varname] = xr.DataArray(
+                            var.data,
+                            dims=('time', 'z'),
+                            coords={'time': time, 'z':z},
+                            attrs={'long_name': var.long_name, 'units': 'none'},
+                        )
+                    elif 'z_w' in var.coords:
+                        # variables at cell interfaces
+                        out[varname] = xr.DataArray(
+                            var.data,
+                            dims=('time', 'zi'),
+                            coords={'time': time, 'zi':zi},
+                            attrs={'long_name': var.long_name, 'units': 'none'},
+                        )
+                    else:
+                        raise IOError('Invalid z coordinate')
+                elif var.ndim == 3:
+                    iscl = 0
+                    if 'z_u' in var.coords:
+                        # variables at cell centers
+                        out[varname] = xr.DataArray(
+                            var.data[:,iscl,:],
+                            dims=('time', 'z'),
+                            coords={'time': time, 'z':z},
+                            attrs={'long_name': var.long_name, 'units': 'none'},
+                        )
+                    elif 'z_w' in var.coords:
+                        # variables at cell interfaces
+                        out[varname] = xr.DataArray(
+                            var.data[:,iscl,:],
+                            dims=('time', 'zi'),
+                            coords={'time': time, 'zi':zi},
+                            attrs={'long_name': var.long_name, 'units': 'none'},
+                        )
+                    else:
+                        raise IOError('Invalid z coordinate')
+                # attributes
+                out.attrs['title'] = fdata.attrs['title']
+        return out.transpose()
+
