@@ -93,6 +93,8 @@ class PALMDataProfile(LESData):
             # define output dataset
             out = xr.Dataset()
             for varname in fdata.data_vars:
+                if varname.startswith('NORM'):
+                    break
                 var = fdata.data_vars[varname]
                 zvar0 = fdata.coords['z'+varname].data[-2]
                 if zvar0 == z.data[-1]:
