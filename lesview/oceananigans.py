@@ -63,8 +63,7 @@ def get_zu(
     """
     Lz = data['grid']['Lz'][()]
     z = data['grid']['zC'][()]
-    z = np.delete(z, z<-Lz)
-    z = np.delete(z, z>0.)
+    z = z[ (z>=-Lz) & (z<=0.) ]
     z = xr.DataArray(
         z,
         dims=('z'),
@@ -83,8 +82,7 @@ def get_zw(
     """
     Lz = data['grid']['Lz'][()]
     z = data['grid']['zF'][()]
-    z = np.delete(z, z<-Lz)
-    z = np.delete(z, z>0.)
+    z = z[ (z>=-Lz) & (z<=0.) ]
     z = xr.DataArray(
         z,
         dims=('zi'),
@@ -181,6 +179,8 @@ class OceananigansDataProfile(LESData):
             zw = get_zw(fdata)
             nzu = zu.size
             nzw = zw.size
+            print(zu)
+            print(zw)
             # define output dataset
             out = xr.Dataset()
             for varname in fdata['timeseries'].keys():
