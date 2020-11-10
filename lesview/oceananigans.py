@@ -179,8 +179,6 @@ class OceananigansDataProfile(LESData):
             zw = get_zw(fdata)
             nzu = zu.size
             nzw = zw.size
-            print(zu)
-            print(zw)
             # define output dataset
             out = xr.Dataset()
             for varname in fdata['timeseries'].keys():
