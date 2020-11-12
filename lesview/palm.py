@@ -124,38 +124,44 @@ class PALMDataVolume(LESData):
             # time dimension, use reference time
             time = pd.to_datetime(fdata.time.data/np.timedelta64(1, 's'), unit='s', origin=self._datetime_origin)
             # coordinates
-            zu = fdata.coords['zu_3d']
-            zw = fdata.coords['zw_3d']
-            z = xr.DataArray(
-                zu.data[1:-1],
-                dims=('z'),
-                coords={'z': zu.data[1:-1]},
-                attrs={'long_name': 'z', 'units': zu.units},
-                )
-            zi = xr.DataArray(
-                zw.data[:-1],
-                dims=('zi'),
-                coords={'zi': zw.data[:-1]},
-                attrs={'long_name': 'zi', 'units': zw.units},
-                )
-            x  = fdata.coords['x']
-            x.attrs['long_name'] = 'x'
-            xu = fdata.coords['xu']
-            xi = xr.DataArray(
-                xu.data,
-                dims=('xi'),
-                coords={'xi': xu.data},
-                attrs={'long_name': 'xi', 'units': xu.units},
-                )
-            y  = fdata.coords['y']
-            y.attrs['long_name'] = 'y'
-            yv = fdata.coords['yv']
-            yi = xr.DataArray(
-                yv.data,
-                dims=('yi'),
-                coords={'yi': yv.data},
-                attrs={'long_name': 'yi', 'units': yv.units},
-                )
+            if 'zu_3d' in fdata.coords:
+                zu = fdata.coords['zu_3d']
+                z = xr.DataArray(
+                    zu.data[1:-1],
+                    dims=('z'),
+                    coords={'z': zu.data[1:-1]},
+                    attrs={'long_name': 'z', 'units': zu.units},
+                    )
+            if 'zw_3d' in fdata.coords:
+                zw = fdata.coords['zw_3d']
+                zi = xr.DataArray(
+                    zw.data[:-1],
+                    dims=('zi'),
+                    coords={'zi': zw.data[:-1]},
+                    attrs={'long_name': 'zi', 'units': zw.units},
+                    )
+            if 'x' in fdata.coords:
+                x  = fdata.coords['x']
+                x.attrs['long_name'] = 'x'
+            if 'xu' in fdata.coords:
+                xu = fdata.coords['xu']
+                xi = xr.DataArray(
+                    xu.data,
+                    dims=('xi'),
+                    coords={'xi': xu.data},
+                    attrs={'long_name': 'xi', 'units': xu.units},
+                    )
+            if 'y' in fdata.coords:
+                y  = fdata.coords['y']
+                y.attrs['long_name'] = 'y'
+            if 'yv' in fdata.coords:
+                yv = fdata.coords['yv']
+                yi = xr.DataArray(
+                    yv.data,
+                    dims=('yi'),
+                    coords={'yi': yv.data},
+                    attrs={'long_name': 'yi', 'units': yv.units},
+                    )
             # define output dataset
             out = xr.Dataset()
             for varname in fdata.data_vars:
