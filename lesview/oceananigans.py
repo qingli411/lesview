@@ -62,7 +62,7 @@ def get_zu(
 
     """
     Lz = data['grid']['Lz'][()]
-    z = data['grid']['zC'][()]
+    z = data['grid']['zᵃᵃᶜ'][()]
     z = z[ (z>=-Lz) & (z<=0.) ]
     z = xr.DataArray(
         z,
@@ -81,7 +81,7 @@ def get_zw(
 
     """
     Lz = data['grid']['Lz'][()]
-    z = data['grid']['zF'][()]
+    z = data['grid']['zᵃᵃᶠ'][()]
     z = z[ (z>=-Lz) & (z<=0.) ]
     z = xr.DataArray(
         z,
@@ -100,6 +100,8 @@ def var_units(
 
     """
     var_units = {
+            'T':    '$^\circ$C',
+            'S':    'psu',
             'b':    'm/s$^2$',
             'bb':   'm$^2$/s$^4$',
             'e':    'm$^2$/s$^2$',
@@ -112,9 +114,12 @@ def var_units(
             'vb':   'm$^2$/s$^3$',
             'vv':   'm$^2$/s$^2$',
             'wb':   'm$^2$/s$^3$',
+            'wt':   'm/s $^\circ$C',
+            'ws':   'm/s psu',
             'wu':   'm$^2$/s$^2$',
             'wv':   'm$^2$/s$^2$',
             'ww':   'm$^2$/s$^2$',
+            'wu':   'm$^2$/s$^2$',
             'tke_advective_flux':   'm$^3$/s$^3$',
             'tke_buoyancy_flux':    'm$^2$/s$^3$',
             'tke_dissipation':      'm$^2$/s$^3$',
