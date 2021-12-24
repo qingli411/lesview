@@ -61,9 +61,8 @@ def get_zu(
     :return: (xarray.DataArray) z
 
     """
-    Lz = data['grid']['Lz'][()]
-    z = data['grid']['zᵃᵃᶜ'][()]
-    z = z[ (z>=-Lz) & (z<=0.) ]
+    Hz = data['grid']['Hz'][()]
+    z = data['grid']['zᵃᵃᶜ'][()][Hz:-Hz]
     z = xr.DataArray(
         z,
         dims=('z'),
@@ -80,9 +79,8 @@ def get_zw(
     :return: (xarray.DataArray) z
 
     """
-    Lz = data['grid']['Lz'][()]
-    z = data['grid']['zᵃᵃᶠ'][()]
-    z = z[ (z>=-Lz) & (z<=0.) ]
+    Hz = data['grid']['Hz'][()]
+    z = data['grid']['zᵃᵃᶠ'][()][Hz:-Hz]
     z = xr.DataArray(
         z,
         dims=('zi'),
