@@ -163,7 +163,7 @@ class NCARLESDataProfile(LESData):
                             attrs={'long_name': var.long_name, 'units': var_units(varname)},
                         )
                     else:
-                        raise IOError('Invalid z coordinate')
+                        raise ValueError('Invalid z coordinate')
                 elif var.ndim == 3:
                     iscl = 0
                     if 'z_u' in var.coords:
@@ -183,7 +183,7 @@ class NCARLESDataProfile(LESData):
                             attrs={'long_name': var.long_name, 'units': var_units(varname)},
                         )
                     else:
-                        raise IOError('Invalid z coordinate')
+                        raise ValueError('Invalid z coordinate')
                 # attributes
                 out.attrs['title'] = fdata.attrs['title']
         return out.transpose()

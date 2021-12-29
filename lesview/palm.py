@@ -82,7 +82,7 @@ class PALMDataProfile(LESData):
                         attrs={'long_name': var.long_name, 'units': var.units},
                     )
                 else:
-                    raise IOError('Invalid z coordinate')
+                    raise ValueError('Invalid z coordinate')
                 # attributes
                 out.attrs['title'] = fdata.attrs['title']
         return out.transpose()
@@ -93,7 +93,7 @@ class PALMDataProfile(LESData):
 
 class PALMDataVolume(LESData):
 
-    """A data type for PALM volumn data
+    """A data type for PALM volume data
        See https://palm.muk.uni-hannover.de/trac/wiki/doc/app/iofiles#DATA_3D_NETCDF
 
     """
@@ -105,7 +105,7 @@ class PALMDataVolume(LESData):
             ):
         """Initialization
 
-        :filepath:        (str) path of the PALM profile data file
+        :filepath:        (str) path of the PALM volume data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
 
         """
@@ -200,7 +200,7 @@ class PALMDataVolume(LESData):
                         attrs={'long_name': var.long_name, 'units': var.units},
                     )
                 else:
-                    raise IOError('Invalid coordinates')
+                    raise ValueError('Invalid coordinates')
                 # attributes
                 out.attrs['title'] = fdata.attrs['title']
         return out
