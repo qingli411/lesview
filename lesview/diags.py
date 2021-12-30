@@ -194,3 +194,32 @@ def stretch_bl(ds, h, zdim='z'):
     dsnew.attrs['mean_bld'] = hmean
     return dsnew
 
+def get_raps_2d(da, L=None):
+    """Compute the radially averaged power spectrum of 2D squared matrix
+
+    :da: (numpy.ndarray) input matrix
+    :L:  (float, optional) size of the domain in meters for rescaling
+    :returns: (numpy.ndarray, numpy.ndarray) x- and y-coordinates of the power spectrum
+
+    """
+    nx, ny = da.shape
+    fa = np.fft.fftshift(np.fft.fft2(da))
+    pa = np.abs(fa)**2
+    ea = np.zeros(nx)
+    wgt = np.zeros(nx)
+    ixc = nx//2
+    iyc = ny//2
+    for iy in np.arange(ny):
+        for ix in np.arange(nx):
+            ii = np.sqrt((iy-iyc)**2+(ix-ixc)**2)
+            i = int(np.round(ii))
+            ea[i] += pa[ix, iy]
+            wgt[i] += 1.
+    kx = np.arange(nx//2)
+    e_y = ea[:nx//2]/wgt[:nx//2]
+    if L is not None:
+        sca = 2.*np.pi/L
+    else:
+        sca = 1.
+    e_x = sca*kx
+    return (e_x, e_y)
