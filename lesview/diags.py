@@ -3,6 +3,7 @@
 #--------------------------------
 import numpy as np
 import xarray as xr
+import scipy.stats as stats
 from scipy.interpolate import interp1d
 
 def get_mld_deltaT(Temp, deltaT=0.2, zRef=-10, zdim='z'):
@@ -194,32 +195,26 @@ def stretch_bl(ds, h, zdim='z'):
     dsnew.attrs['mean_bld'] = hmean
     return dsnew
 
-def get_raps_2d(da, L=None):
-    """Compute the radially averaged power spectrum of 2D squared matrix
+def get_power_spectrum_1d(da):
+    """Compute the 1D power spectrum of 2D squared matrix
+    https://bertvandenbroucke.netlify.app/2019/05/24/computing-a-power-spectrum-in-python/
 
     :da: (numpy.ndarray) input matrix
-    :L:  (float, optional) size of the domain in meters for rescaling
-    :returns: (numpy.ndarray, numpy.ndarray) x- and y-coordinates of the power spectrum
+    :returns: (numpy.ndarray, numpy.ndarray) wave number and the power spectrum
 
     """
-    nx, ny = da.shape
-    fa = np.fft.fftshift(np.fft.fft2(da))
-    pa = np.abs(fa)**2
-    ea = np.zeros(nx)
-    wgt = np.zeros(nx)
-    ixc = nx//2
-    iyc = ny//2
-    for iy in np.arange(ny):
-        for ix in np.arange(nx):
-            ii = np.sqrt((iy-iyc)**2+(ix-ixc)**2)
-            i = int(np.round(ii))
-            ea[i] += pa[ix, iy]
-            wgt[i] += 1.
-    kx = np.arange(nx//2)
-    e_y = ea[:nx//2]/wgt[:nx//2]
-    if L is not None:
-        sca = 2.*np.pi/L
-    else:
-        sca = 1.
-    e_x = sca*kx
-    return (e_x, e_y)
+    npix = da.shape[0]
+    fourier_da = np.fft.fftn(da)
+    fourier_amplitudes = np.abs(fourier_da)**2
+    kfreq = np.fft.fftfreq(npix) * npix
+    kfreq2D = np.meshgrid(kfreq, kfreq)
+    knrm = np.sqrt(kfreq2D[0]**2 + kfreq2D[1]**2)
+    knrm = knrm.flatten()
+    fourier_amplitudes = fourier_amplitudes.flatten()
+    kbins = np.arange(0.5, npix//2+1, 1.)
+    kvals = 0.5 * (kbins[1:] + kbins[:-1])
+    Abins, _, _ = stats.binned_statistic(knrm, fourier_amplitudes,
+                                         statistic = "mean",
+                                         bins = kbins)
+    Abins *= np.pi * (kbins[1:]**2 - kbins[:-1]**2)
+    return (kvals, Abins)
