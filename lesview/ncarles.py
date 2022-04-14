@@ -89,7 +89,11 @@ def var_units(
             'vtsb':     'K m/s',
             'wtsb':     'K m/s',
             }
-    return var_units[varname]
+    if varname in var_units.keys():
+        return var_units[varname]
+    else:
+        print('The unit of \'{:s}\' is not defined. Set to \'none\'.'.format(varname))
+        return 'none'
 
 #--------------------------------
 # NCARLESDataProfile

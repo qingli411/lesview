@@ -178,7 +178,11 @@ def var_units(
             'tke_pressure_flux':    'm$^3$/s$^3$',
             'tke_shear_production': 'm$^2$/s$^3$',
             }
-    return var_units[varname]
+    if varname in var_units.keys():
+        return var_units[varname]
+    else:
+        print('The unit of \'{:s}\' is not defined. Set to \'none\'.'.format(varname))
+        return 'none'
 
 #--------------------------------
 # OceananigansDataProfile
