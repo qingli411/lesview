@@ -358,7 +358,11 @@ class OceananigansDataVolume(LESData):
                         x = gx
                 else:
                     raise ValueError('Invalid x coordinate')
-                out[varname] = get_volume(fdata, varname, time, x, y, z, iters_sorted)
+                da = get_volume(fdata, varname, time, x, y, z, iters_sorted)
+                for dname in ['zslice', 'yslice', 'xslice']:
+                    if dname in da.coords:
+                        da = da.drop(labels=dname)
+                out[varname] = da
         return out
 
 
