@@ -112,7 +112,7 @@ class NCARLESDataProfile(LESData):
             ):
         """Initialization
 
-        :filepath:        (str) path of the PALM profile data file
+        :filepath:        (str) path of the NCAR LES profile data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
 
         """
