@@ -76,47 +76,67 @@ def get_grid(
 
 def get_x(
         data,
+        latlon=False,
         ):
     """Get the x dimension (grid centers)
 
     :data:   (h5py.File) input file
+    :latlon: (bool) Latitude-Longitude grid
     :return: (xarray.DataArray) x
 
     """
-    return get_grid(data, 'xᶜᵃᵃ', 'Hx', 'x', 'm')
+    if latlon:
+        return get_grid(data, 'λᶜᵃᵃ', 'Hx', 'lon', 'degree_east')
+    else:
+        return get_grid(data, 'xᶜᵃᵃ', 'Hx', 'x', 'm')
 
 def get_xi(
         data,
+        latlon=False,
         ):
     """Get the x dimension (grid interfaces)
 
     :data:   (h5py.File) input file
+    :latlon: (bool) Latitude-Longitude grid
     :return: (xarray.DataArray) x
 
     """
-    return get_grid(data, 'xᶠᵃᵃ', 'Hx', 'xi', 'm')
+    if latlon:
+        return get_grid(data, 'λᶠᵃᵃ', 'Hx', 'loni', 'degree_east')
+    else:
+        return get_grid(data, 'xᶠᵃᵃ', 'Hx', 'xi', 'm')
 
 def get_y(
         data,
+        latlon=False,
         ):
     """Get the y dimension (grid centers)
 
     :data:   (h5py.File) input file
+    :latlon: (bool) Latitude-Longitude grid
     :return: (xarray.DataArray) y
 
     """
-    return get_grid(data, 'yᵃᶜᵃ', 'Hy', 'y', 'm')
+    if latlon:
+        return get_grid(data, 'φᵃᶜᵃ', 'Hy', 'lat', 'degree_north')
+    else:
+        return get_grid(data, 'yᵃᶜᵃ', 'Hy', 'y', 'm')
 
 def get_yi(
         data,
+        latlon=False,
         ):
     """Get the y dimension (grid interfaces)
 
     :data:   (h5py.File) input file
+    :latlon: (bool) Latitude-Longitude grid
     :return: (xarray.DataArray) y
 
     """
-    return get_grid(data, 'yᵃᶠᵃ', 'Hy', 'yi', 'm')
+    if latlon:
+        return get_grid(data, 'φᵃᶠᵃ', 'Hy', 'lati', 'degree_north')
+    else:
+        return get_grid(data, 'yᵃᶠᵃ', 'Hy', 'yi', 'm')
 
 def get_z(
         data,
@@ -152,6 +172,7 @@ def var_units(
     var_units = {
             'T':    '$^\circ$C',
             'S':    'psu',
+            'η':    'm',
             'b':    'm/s$^2$',
             'bb':   'm$^2$/s$^4$',
             'e':    'm$^2$/s$^2$',
@@ -267,15 +288,18 @@ class OceananigansDataVolume(LESData):
             self,
             filepath = '',
             datetime_origin = '2000-01-01T00:00:00',
+            latlon = False,
             ):
         """Initialization
 
         :filepath:        (str) path of the Oceananigans volume data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
+        :latlon:          (bool) Latitude-Longitude grid
 
         """
         super(OceananigansDataVolume, self).__init__(filepath)
         self._datetime_origin = datetime_origin
+        self._latlon = latlon
         self.dataset = self._load_dataset()
 
     def _load_dataset(
@@ -312,12 +336,12 @@ class OceananigansDataVolume(LESData):
         with h5py.File(self._filepath, 'r') as fdata:
             iters_sorted = get_iters_sorted(fdata)
             time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin)
-            gx   = get_x(fdata)
-            gxi  = get_xi(fdata)
+            gx   = get_x(fdata, latlon=self._latlon)
+            gxi  = get_xi(fdata, latlon=self._latlon)
             gnx  = gx.size
             gnxi = gxi.size
-            gy   = get_y(fdata)
-            gyi  = get_yi(fdata)
+            gy   = get_y(fdata, latlon=self._latlon)
+            gyi  = get_yi(fdata, latlon=self._latlon)
             gny  = gy.size
             gnyi = gyi.size
             gz   = get_z(fdata)
@@ -342,7 +366,7 @@ class OceananigansDataVolume(LESData):
                     raise ValueError('Invalid z coordinate')
                 if ny == 1:
                     y = get_dim_slice(np.array([0]), 'yslice', 'm' )
-                elif ny == gny:
+                elif ny == gny or ny == gny+1:
                     if varname in ['v']:
                         y = gyi
                     else:
