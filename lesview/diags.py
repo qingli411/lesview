@@ -78,18 +78,18 @@ def get_mld_deltaR(Rho, deltaR=0.03, zRef=-10, zdim='z'):
                             'units': 'm'})
     return mld
 
-def get_bld_maxNN(NN, zdim='zi', nskip=0):
+def get_bld_maxNN(NN, zdim='zi', nr=[0,-1]):
     """Find the boundary layer depth defined as the depth where
        the stratification N^2 reaches its maximum
 
     :NN: (xarray.DataArray) stratification
     :zdim: (str, optional) name of the z coordinates
-    :nskip: (int, optional) number of z levels to skip at the bottom
+    :nr: (list of two int, optional) range of indices to apply the algorithm
     :returns: (xarray.DataArray) boundary layer depth in m
 
     """
-    Nsqr = NN.values[nskip:,:]
-    z = NN.coords[zdim].values[nskip:]
+    Nsqr = NN.values[nr[0]:nr[1],:]
+    z = NN.coords[zdim].values[nr[0]:nr[1]]
     nz = z.size
     nt = NN.time.shape[0]
     bld_val = np.zeros(nt)
