@@ -167,7 +167,7 @@ class PALMDataVolume(LESData):
             for varname in fdata.data_vars:
                 var = fdata.data_vars[varname]
                 # special case
-                if 'xu' in var.coords:
+                if 'xu' in var.dims:
                     # variables at the u location
                     out[varname] = xr.DataArray(
                         var.data[:,1:-1,:,:],
@@ -175,7 +175,7 @@ class PALMDataVolume(LESData):
                         coords={'time': time, 'z':z, 'y':y, 'xi':xi},
                         attrs={'long_name': var.long_name, 'units': var.units},
                     )
-                elif 'yv' in var.coords:
+                elif 'yv' in var.dims:
                     # variables at the v location
                     out[varname] = xr.DataArray(
                         var.data[:,1:-1,:,:],
@@ -183,7 +183,7 @@ class PALMDataVolume(LESData):
                         coords={'time': time, 'z':z, 'yi':yi, 'x':x},
                         attrs={'long_name': var.long_name, 'units': var.units},
                     )
-                elif 'zu_3d' in var.coords:
+                elif 'zu_3d' in var.dims:
                     # variables at cell centers
                     out[varname] = xr.DataArray(
                         var.data[:,1:-1,:,:],
@@ -191,7 +191,7 @@ class PALMDataVolume(LESData):
                         coords={'time': time, 'z':z, 'y':y, 'x':x},
                         attrs={'long_name': var.long_name, 'units': var.units},
                     )
-                elif 'zw_3d' in var.coords:
+                elif 'zw_3d' in var.dims:
                     # variables at cell interfaces
                     out[varname] = xr.DataArray(
                         var.data[:,:-1,:,:],
