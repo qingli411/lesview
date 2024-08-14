@@ -65,7 +65,7 @@ class PALMDataProfile(LESData):
                     break
                 var = fdata.data_vars[varname]
                 zvar0 = fdata.coords['z'+varname].data[-2]
-                if zvar0 == z.data[-1]:
+                if np.abs(zvar0-z.data[-1]) < 1.e-6:
                     # variables at cell centers
                     out[varname] = xr.DataArray(
                         var.data[:,1:-1],
@@ -73,7 +73,7 @@ class PALMDataProfile(LESData):
                         coords={'time': time, 'z':z},
                         attrs={'long_name': var.long_name, 'units': var.units},
                     )
-                elif zvar0 == zi.data[-1]:
+                elif np.abs(zvar0-zi.data[-1]) < 1.e-6:
                     # variables at cell interfaces
                     out[varname] = xr.DataArray(
                         var.data[:,:-1],
