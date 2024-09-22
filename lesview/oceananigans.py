@@ -272,7 +272,9 @@ class OceananigansDataProfile(LESData):
             # define output dataset
             out = xr.Dataset()
             for varname in fdata['timeseries'].keys():
-                ndvar = fdata['timeseries'][varname]['0'][()].size
+                davar = fdata['timeseries'][varname]
+                tlist = list(davar.keys())
+                ndvar = davar[tlist[0]][()].size
                 if ndvar == gnz:
                     z = gz
                 elif ndvar == gnzi:
@@ -323,7 +325,8 @@ class OceananigansDataVolume(LESData):
         def get_volume(data, varname, time, x, y, z, iters):
             davar = data['timeseries'][varname]
             nt = len(iters)
-            nz, ny, nx = davar['0'][()].shape
+            tlist = list(davar.keys())
+            nz, ny, nx = davar[tlist[0]][()].shape
             var_arr = np.zeros([nz, ny, nx, nt])
             for i, it in enumerate(iters):
                 var_arr[:,:,:,i] = davar[it][()]
@@ -360,7 +363,9 @@ class OceananigansDataVolume(LESData):
             # define output dataset
             out = xr.Dataset()
             for varname in fdata['timeseries'].keys():
-                ndvar = fdata['timeseries'][varname]['0'][()].shape
+                davar = fdata['timeseries'][varname]
+                tlist = list(davar.keys())
+                ndvar = davar[tlist[0]][()].shape
                 if len(ndvar) != 3:
                     print('Variable \'{:}\' has dimension {}. Skipping.'.format(varname, ndvar))
                     continue
