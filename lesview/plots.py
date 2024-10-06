@@ -59,7 +59,10 @@ def plot_box_field(da, itime=-1, view='top', zdist=1, **kwargs):
         ix = 0
         iy = -1
     elif view == 'both':
-        ix = int(da.coords['x'].size/2)
+        if isxi:
+            ix = int(da.coords['xi'].size/2)
+        else:
+            ix = int(da.coords['x'].size/2)
         iy = -1
     else:
         raise ValueError('Invalid view, should be \"top\", \"bottom\", or \"both\"')
