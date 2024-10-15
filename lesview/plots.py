@@ -87,7 +87,7 @@ def _plot_box(dxy, dxy2, dxz, dyz, view,
     ax.set_box_aspect((1,1,0.3), zoom=1)
     ax.view_init(elev=40, azim=-40)
     ax_inset = ax.inset_axes([0.75, 0.85, 0.3, 0.03])
-    cb = plt.colorbar(im, cax=ax_inset, orientation='horizontal', label='${:s}$ [{:s}]'.format(dxz.attrs['long_name'], dxz.attrs['units']), ticks=[im.levels[0], im.levels[int(im.levels.size/2)], im.levels[-1]])
+    cb = plt.colorbar(im, cax=ax_inset, orientation='horizontal', label='{:s} [{:s}]'.format(dxz.attrs['long_name'], dxz.attrs['units']), ticks=[im.levels[0], im.levels[int(im.levels.size/2)], im.levels[-1]])
     ax.text2D(0.05, 0.85, timestr, transform=ax.transAxes, fontsize=12, va='top', ha='left')
 
     return plt.gcf()
