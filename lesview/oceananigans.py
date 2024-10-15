@@ -160,6 +160,60 @@ def get_zi(
     """
     return get_grid(data, 'zᵃᵃᶠ', 'Hz', 'zi', 'm')
 
+def var_longname(
+        varname,
+        ):
+    """Return the long name of a variable in Oceananigans
+
+    :varname: (str) variable name
+    :return:  (str) unit
+
+    """
+    var_longname = {
+            'T':    '$T$',
+            'S':    'psu',
+            'η':    '$\eta$',
+            'b':    '$b$',
+            'bb':   '$\overline{{b^\prime}^2}$',
+            'tt':   '$\overline{{T^\prime}^2}$',
+            'e':    '$e$',
+            'p':    '$p$',
+            'u':    '$u$',
+            'ub':   '$\overline{u^\prime b^\prime}$',
+            'uu':   '$\overline{{u^\prime}^2}$',
+            'uv':   '$\overline{u^\prime v^\prime}$',
+            'v':    '$u$',
+            'vb':   '$\overline{v^prime b^\prime}$',
+            'vv':   '$\overline{{v^\prime}^2}$',
+            'w':    '$w$',
+            'wb':   '$\overline{w^\prime b^\prime}$',
+            'wt':   '$\overline{w^\prime T^\prime}$',
+            'ws':   '$\overline{w^\prime S^\prime}$',
+            'wu':   '$\overline{u^\prime w^\prime}$',
+            'wv':   '$\overline{v^\prime w^\prime}$',
+            'ww':   '$\overline{{w^\prime}^2}$',
+            'ubsb': '$\overline{u^\prime b^\prime}^{sgs}$',
+            'vbsb': '$\overline{v^\prime b^\prime}^{sgs}$',
+            'wbsb': '$\overline{w^\prime b^\prime}^{sgs}$',
+            'wtsb': '$\overline{w^\prime T^\prime}^{sgs}$',
+            'wssb': '$\overline{w^\prime S^\prime}^{sgs}$',
+            'uvsb': '$\overline{u^\prime v^\prime}^{sgs}$',
+            'wusb': '$\overline{u^\prime w^\prime}^{sgs}$',
+            'wvsb': '$\overline{v^\prime w^\prime}^{sgs}$',
+            'w3':   '$\overline{{w^\prime}^3}$',
+            'νₑ':   '$\\nu_e$',
+            'tke_advective_flux':   'TKE advective flux',
+            'tke_buoyancy_flux':    'TKE buoyancy flux',
+            'tke_dissipation':      'TKE dissipation',
+            'tke_pressure_flux':    'TKE pressure flux',
+            'tke_shear_production': 'TKE shear producton',
+            }
+    if varname in var_longname.keys():
+        return var_longname[varname]
+    else:
+        print('The long name of \'{:s}\' is not defined. Set to \'none\'.'.format(varname))
+        return 'none'
+
 def var_units(
         varname,
         ):
@@ -259,7 +313,7 @@ class OceananigansDataProfile(LESData):
                 var_arr,
                 dims=(z.dims[0], 'time'),
                 coords={z.dims[0]: z, 'time': time},
-                attrs={'long_name': varname, 'units': var_units(varname)})
+                attrs={'long_name': var_longname(varname), 'units': var_units(varname)})
             return var
         # load all variables into an xarray.Dataset
         with h5py.File(self._filepath, 'r') as fdata:
@@ -334,7 +388,7 @@ class OceananigansDataVolume(LESData):
                 var_arr,
                 dims=(z.dims[0], y.dims[0], x.dims[0], 'time'),
                 coords={z.dims[0]: z, y.dims[0]: y, x.dims[0]: x, 'time': time},
-                attrs={'long_name': varname, 'units': var_units(varname)})
+                attrs={'long_name': var_longname(varname), 'units': var_units(varname)})
             return var
         # define the dimension for a slice
         def get_dim_slice(dat, dimname, dimunits):
