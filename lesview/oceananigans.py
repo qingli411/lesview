@@ -354,24 +354,28 @@ class OceananigansDataVolume(LESData):
             filepath = '',
             datetime_origin = '2000-01-01T00:00:00',
             latlon = False,
+            fieldname = None,
             ):
         """Initialization
 
         :filepath:        (str) path of the Oceananigans volume data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
         :latlon:          (bool) Latitude-Longitude grid
+        :fieldname:       (str) name of field to load if given
 
         """
         super(OceananigansDataVolume, self).__init__(filepath)
         self._datetime_origin = datetime_origin
         self._latlon = latlon
-        self.dataset = self._load_dataset()
+        self.dataset = self._load_dataset(fieldname)
 
     def _load_dataset(
             self,
+            fieldname
             ):
         """Load data set
 
+        :fieldname: (str) name of field to load if given
         :return: (xarray.Dataset) data set
 
         """
@@ -416,7 +420,11 @@ class OceananigansDataVolume(LESData):
             gnzi = gzi.size
             # define output dataset
             out = xr.Dataset()
-            for varname in fdata['timeseries'].keys():
+            if fieldname is None:
+                vlist = fdata['timeseries'].keys()
+            else:
+                vlist = list(fieldname)
+            for varname in vlist:
                 davar = fdata['timeseries'][varname]
                 tlist = list(davar.keys())
                 ndvar = davar[tlist[0]][()].shape
