@@ -211,22 +211,28 @@ class NCARLESDataVolume(LESData):
             self,
             filepath = '',
             datetime_origin = '2000-01-01T00:00:00',
+            fieldname = None,
             ):
         """Initialization
 
         :filepath:        (str) path of the NCARLES volume data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
+        :fieldname:       (str) name of field to load if given
 
         """
         super(NCARLESDataVolume, self).__init__(filepath)
         self._datetime_origin = datetime_origin
-        self.dataset = self._load_dataset()
+        self.dataset = self._load_dataset(fieldname)
         self._name = self.dataset.attrs['title']
 
     def _load_dataset(
             self,
+            fieldname
             ):
         """Load data set
+
+        :fieldname: (str) name of field to load if given
+        :return: (xarray.Dataset) data set
 
         """
         with xr.open_dataset(self._filepath) as fdata:
@@ -275,11 +281,15 @@ class NCARLESDataVolume(LESData):
                 has_npln = True
             # define output dataset
             out = xr.Dataset()
+            if fieldname is None:
+                vlist = fdata.data_vars
+            else:
+                vlist = list(fieldname)
             if has_npln:
                 # slice data
                 if has_x and has_y:
                     # xy-slice
-                    for varname in fdata.data_vars:
+                    for varname in vlist:
                         var = fdata.data_vars[varname]
                         out[varname] = xr.DataArray(
                                 var.data,
@@ -289,7 +299,7 @@ class NCARLESDataVolume(LESData):
                                 )
                 elif has_x and has_z:
                     # xz-slice
-                    for varname in fdata.data_vars:
+                    for varname in vlist:
                         var = fdata.data_vars[varname]
                         if 'z' in var.dims:
                             out[varname] = xr.DataArray(
@@ -309,7 +319,7 @@ class NCARLESDataVolume(LESData):
                             raise ValueError('Invalid coordinates')
                 elif has_y and has_z:
                     # yz-slice
-                    for varname in fdata.data_vars:
+                    for varname in vlist:
                         var = fdata.data_vars[varname]
                         if 'z' in var.dims:
                             out[varname] = xr.DataArray(
@@ -334,7 +344,7 @@ class NCARLESDataVolume(LESData):
             else:
                 # volume data
                 if has_x and has_y and has_z:
-                    for varname in fdata.data_vars:
+                    for varname in vlist:
                         var = fdata.data_vars[varname]
                         if 'z' in var.coords:
                             # variables at cell centers
