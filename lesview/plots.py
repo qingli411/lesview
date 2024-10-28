@@ -2,7 +2,9 @@
 # Plots
 #--------------------------------
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
 
 def _check_x_coordinate(dat):
 
@@ -212,3 +214,70 @@ def plot_box_slice(
     return _plot_box(dxy, dxy2, dxz, dyz, view,
                   xc, xmin, xmax, ix, yc, ymin, ymax, iy,
                   zc, zmin, zmax, zoffset, zoffset2, timestr, **kwargs)
+
+def plot_overview_average(
+    das,
+    labels,
+    levels,
+    tavgs):
+    """Plot an overview of the horizontally averaged variables
+
+    :das: (dict) data array
+    :labels: (dict) labels for each variable in the data array
+    :levels: (dict) levels for each variable in the data array
+    :tavgs: (dict) time slices for average profiles
+
+    Example:
+
+    tavg1 = dict(starttime='2000-01-01T07:00:00', endtime='2000-01-01T09:00:00', line_kw=dict(color='k', linestyle='--'))
+    tavg2 = dict(starttime='2000-01-01T12:00:00', endtime='2000-01-01T14:00:00', line_kw=dict(color='k', linestyle='-'))
+    das = dict(
+        u = ds.data_vars['uxym']/ustar,
+        v = ds.data_vars['vxym']/ustar,
+        dudz = ds.data_vars['uxym'].differentiate(coord='z')*hb/ustar,
+        dvdz = ds.data_vars['vxym'].differentiate(coord='z')*hb/ustar,
+    )
+    labels = dict(
+        u = '$u/u_*$',
+        v = '$v/u_*$',
+        dudz = '$\partial_z u h_b/u_*$',
+        dvdz = '$\partial_z v h_b/u_*$',
+    )
+    levels = dict(
+        u = np.linspace(-10, 10, 41),
+        v = np.linspace(-10, 10, 41),
+        dudz = np.linspace(-10, 10, 41),
+        dvdz = np.linspace(-10, 10, 41),
+    )
+    fig = plot_overview(das, labels, levels, tavgs)
+
+    """
+    nv = len(das)
+    fig, axarr = plt.subplots(nv, 2, gridspec_kw={'width_ratios': [1, 5]})
+    fig.set_size_inches([8, 0.4+2*nv])
+    rlcolor = {'RdBu_r': 'k', 'viridis': 'w'}
+    date_form = DateFormatter("%d-%H")
+    for i, var in enumerate(das.keys()):
+        ax = np.ravel(axarr)[i*2+1]
+        cf = das[var].plot(ax=ax, levels=levels[var], cbar_kwargs={'label': labels[var]})
+        cmap = cf.get_cmap().name
+        for j, tag in enumerate(tavgs.keys()):
+            ax.axvline(x=pd.Timestamp(tavgs[tag]['starttime']), linestyle=':', color=rlcolor[cmap])
+            ax.axvline(x=pd.Timestamp(tavgs[tag]['endtime']), linestyle=':', color=rlcolor[cmap])
+            ax.text(pd.Timestamp(tavgs[tag]['starttime']), 0, tag, va='bottom', ha='left')
+        ax.set_title('')
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        ax.xaxis.set_major_formatter(date_form)
+        for lb in ax.get_xticklabels(which='major'):
+            lb.set(rotation=30, horizontalalignment='right')
+        ax = np.ravel(axarr)[i*2+0]
+        for j, tag in enumerate(tavgs.keys()):
+            tslice = slice(tavgs[tag]['starttime'], tavgs[tag]['endtime'])
+            das[var].sel(time=tslice).mean(dim='time').plot(ax=ax, y=das[var].dims[0], label=tag, **tavgs[tag]['line_kw'])
+        ax.set_xlabel(labels[var])
+        ax.set_ylabel('Depth [m]')
+    axarr[0,0].legend(loc='lower right')
+
+    plt.tight_layout()
+    return fig
