@@ -277,7 +277,7 @@ def plot_overview_average(
             das[var].sel(time=tslice).mean(dim='time').plot(ax=ax, y=das[var].dims[0], label=tag, **tavgs[tag]['line_kw'])
         ax.set_xlabel(labels[var])
         ax.set_ylabel('Depth [m]')
-    axarr[0,0].legend(loc='lower right')
+    np.ravel(axarr)[0].legend(loc='lower right')
 
     plt.tight_layout()
     return fig
