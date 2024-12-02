@@ -46,9 +46,11 @@ def _check_view(view, nx):
 
 def _plot_box(dxy, dxy2, dxz, dyz, view,
               xc, xmin, xmax, ix, yc, ymin, ymax, iy,
-              zc, zmin, zmax, zoffset, zoffset2, timestr, **kwargs):
+              zc, zmin, zmax, zoffset, zoffset2, timestr,
+              ax, add_colorbar, add_timestamp, **kwargs):
 
-    ax = plt.figure(figsize=[8,6]).add_subplot(projection='3d',computed_zorder=False)
+    if ax is None:
+        ax = plt.figure(figsize=[8,6]).add_subplot(projection='3d',computed_zorder=False)
     edges_kw = dict(color='0.4', linewidth=1, zorder=10)
     if view == 'both':
         im = ax.contourf(np.tile(xc[:ix], [zc.size, 1]), dxz.data[:,:ix], np.tile(zc, [xc[:ix].size, 1]).transpose(),  zdir='y', offset=yc[0], extend='both', **kwargs)
@@ -88,17 +90,22 @@ def _plot_box(dxy, dxy2, dxz, dyz, view,
     ax.set_zlim([zmin, zmax])
     ax.set_box_aspect((1,1,0.3), zoom=1)
     ax.view_init(elev=40, azim=-40)
-    ax_inset = ax.inset_axes([0.75, 0.85, 0.3, 0.03])
-    cb = plt.colorbar(im, cax=ax_inset, orientation='horizontal', label='{:s} [{:s}]'.format(dxz.attrs['long_name'], dxz.attrs['units']), ticks=[im.levels[0], im.levels[int(im.levels.size/2)], im.levels[-1]])
-    ax.text2D(0.05, 0.85, timestr, transform=ax.transAxes, fontsize=12, va='top', ha='left')
+    if add_colorbar:
+        ax_inset = ax.inset_axes([0.75, 0.85, 0.3, 0.03])
+        cb = plt.colorbar(im, cax=ax_inset, orientation='horizontal', label='{:s} [{:s}]'.format(dxz.attrs['long_name'], dxz.attrs['units']), ticks=[im.levels[0], im.levels[int(im.levels.size/2)], im.levels[-1]])
+    if add_timestamp:
+        ax.text2D(0.05, 0.85, timestr, transform=ax.transAxes, fontsize=12, va='top', ha='left')
 
-    return plt.gcf()
+    return im
 
 def plot_box_field(
         da,
         itime=-1,
         view='top',
         zdist=1,
+        ax=None,
+        add_colorbar=True,
+        add_timestamp=True,
         **kwargs):
     """Plot a field in a 3D box
 
@@ -107,6 +114,9 @@ def plot_box_field(
     :itime: (int, optional) index for time
     :view: (str, optional) view of the 3D box plot, "top" (default), "bottom", or "both"
     :zdist: (float, optional) distance from the surface and bottom boundaries in m
+    :ax: (matplotlib.axes, optional) axis to plot figure on
+    :add_colorbar: (bool, optional) flag to turn on colorbar
+    :add_timestamp: (bool, optional) flag to add timestamp
     :**kwargs: keyword arguments in pairs passed to plotting functions
 
     """
@@ -146,7 +156,8 @@ def plot_box_field(
 
     return _plot_box(dxy, dxy2, dxz, dyz, view,
                   xc, xmin, xmax, ix, yc, ymin, ymax, iy,
-                  zc, zmin, zmax, zoffset, zoffset2, timestr, **kwargs)
+                  zc, zmin, zmax, zoffset, zoffset2, timestr,
+                  ax=ax, add_colorbar=add_colorbar, add_timestamp=add_timestamp, **kwargs)
 
 def plot_box_slice(
         da_xz,
@@ -157,6 +168,9 @@ def plot_box_slice(
         iz2=None,
         itime=-1,
         view='top',
+        ax=None,
+        add_colorbar=True,
+        add_timestamp=True,
         **kwargs):
     """Plot slices in a 3D box
 
@@ -168,6 +182,9 @@ def plot_box_slice(
     :iz2: (int, optional) z index for the additional xy slice
     :itime: (int, optional) index for time
     :view: (str, optional) view of the 3D box plot, "top" (default), "bottom", or "both"
+    :ax: (matplotlib.axes, optional) axis to plot figure on
+    :add_colorbar: (bool, optional) flag to turn on colorbar
+    :add_timestamp: (bool, optional) flag to add timestamp
     :**kwargs: keyword arguments in pairs passed to plotting functions
 
     """
@@ -213,7 +230,8 @@ def plot_box_slice(
 
     return _plot_box(dxy, dxy2, dxz, dyz, view,
                   xc, xmin, xmax, ix, yc, ymin, ymax, iy,
-                  zc, zmin, zmax, zoffset, zoffset2, timestr, **kwargs)
+                  zc, zmin, zmax, zoffset, zoffset2, timestr,
+                  ax=ax, add_colorbar=add_colorbar, add_timestamp=add_timestamp, **kwargs)
 
 def plot_overview_average(
     das,
