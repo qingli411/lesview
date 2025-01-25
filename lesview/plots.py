@@ -128,6 +128,7 @@ def plot_box_field(
     xmin, xmax, xc, isxi = _check_x_coordinate(dat)
     ymin, ymax, yc, isyi = _check_y_coordinate(dat)
     zmin, zmax, zc, iszi = _check_z_coordinate(dat)
+    zmax = 0.0
 
     # check view
     ix, iy = _check_view(view, xc.size)
@@ -218,6 +219,7 @@ def plot_box_slice(
     xmin, xmax, xc, isxi = _check_x_coordinate(dxz)
     ymin, ymax, yc, isyi = _check_y_coordinate(dyz)
     zmin, zmax, zc, iszi = _check_z_coordinate(dxz)
+    zmax = 0.0
 
     # check view
     ix, iy = _check_view(view, xc.size)
@@ -271,7 +273,7 @@ def plot_overview_average(
 
     """
     nv = len(das)
-    fig, axarr = plt.subplots(nv, 2, gridspec_kw={'width_ratios': [1, 5]})
+    fig, axarr = plt.subplots(nv, 2, sharey='row', gridspec_kw={'width_ratios': [1, 5]})
     fig.set_size_inches([8, 0.4+2*nv])
     rlcolor = {'RdBu_r': 'k', 'viridis': 'w'}
     date_form = DateFormatter("%d-%H")
@@ -295,6 +297,7 @@ def plot_overview_average(
             das[var].sel(time=tslice).mean(dim='time').plot(ax=ax, y=das[var].dims[0], label=tag, **tavgs[tag]['line_kw'])
         ax.set_xlabel(labels[var])
         ax.set_ylabel('Depth [m]')
+        ax.set_xlim([levels[var][0], levels[var][-1]])
     np.ravel(axarr)[0].legend(loc='lower right')
 
     plt.tight_layout()
