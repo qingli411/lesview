@@ -182,7 +182,7 @@ def var_longname(
             'ub':   '$\overline{u^\prime b^\prime}$',
             'uu':   '$\overline{{u^\prime}^2}$',
             'uv':   '$\overline{u^\prime v^\prime}$',
-            'v':    '$u$',
+            'v':    '$v$',
             'vb':   '$\overline{v^prime b^\prime}$',
             'vv':   '$\overline{{v^\prime}^2}$',
             'w':    '$w$',
