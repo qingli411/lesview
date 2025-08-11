@@ -14,11 +14,13 @@ import pandas as pd
 
 def get_iters_sorted(
         data,
+        timeindex=None,
         ):
     """Get sorted iteration labels
 
-    :data:   (h5py.File) input file
-    :return: (list of str) sorted iteration labels
+    :data:      (h5py.File) input file
+    :timeindex: (int) time index
+    :return:    (list of str) sorted iteration labels
 
     """
     davar = data['timeseries']['t']
@@ -27,6 +29,10 @@ def get_iters_sorted(
         iters.append(int(it))
     iters.sort()
     iters_out = ['{}'.format(s) for s in iters]
+    if timeindex is None:
+        return iters_out
+    else:
+        return [iters_out[timeindex]]
     return iters_out
 
 def get_time(
@@ -355,6 +361,7 @@ class OceananigansDataVolume(LESData):
             datetime_origin = '2000-01-01T00:00:00',
             latlon = False,
             fieldname = None,
+            timeindex = None,
             ):
         """Initialization
 
@@ -362,20 +369,23 @@ class OceananigansDataVolume(LESData):
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
         :latlon:          (bool) Latitude-Longitude grid
         :fieldname:       (str) name of field to load if given
+        :timeindex:       (int) time index to load if given
 
         """
         super(OceananigansDataVolume, self).__init__(filepath)
         self._datetime_origin = datetime_origin
         self._latlon = latlon
-        self.dataset = self._load_dataset(fieldname)
+        self.dataset = self._load_dataset(fieldname, timeindex)
 
     def _load_dataset(
             self,
-            fieldname
+            fieldname,
+            timeindex
             ):
         """Load data set
 
         :fieldname: (str) name of field to load if given
+        :timeindex: (int) time index to load if given
         :return: (xarray.Dataset) data set
 
         """
@@ -404,7 +414,7 @@ class OceananigansDataVolume(LESData):
             return d
         # load all variables into an xarray.Dataset
         with h5py.File(self._filepath, 'r') as fdata:
-            iters_sorted = get_iters_sorted(fdata)
+            iters_sorted = get_iters_sorted(fdata, timeindex=timeindex)
             time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin)
             gx   = get_x(fdata, latlon=self._latlon)
             gxi  = get_xi(fdata, latlon=self._latlon)
