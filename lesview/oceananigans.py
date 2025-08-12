@@ -39,12 +39,15 @@ def get_time(
         data,
         iters=None,
         origin='2000-01-01T00:00:00',
+        hours=None,
+
         ):
     """Get the time dimension
 
     :data:   (h5py.File) input file
     :iters:  (list of str) sorted iteration labels
     :origin: (scalar) reference date passed to pandas.to_datetime()
+    :hours:  (bool or scalar) use hours since some reference time as the time coordinate
     :return: (datetime64) time
 
     """
@@ -56,7 +59,21 @@ def get_time(
     for i, it in enumerate(iters):
         time_arr[i] = davar[it][()]
     time = pd.to_datetime(time_arr, unit='s', origin=origin)
-    return time
+    if hours is None:
+        return time
+    else:
+        if hours is True:
+            reftime = origin
+        else:
+            reftime = hours
+        timediff = time - pd.to_datetime(reftime)
+        d = timediff/pd.Timedelta('1 hour')
+        tnew = xr.DataArray(
+                d,
+                dims=('time'),
+                coords={'time': np.arange(d.size)},
+                attrs={'long_name': 'time', 'units': 'hours since {:s}'.format(reftime)})
+        return tnew
 
 def get_grid(
         data,
@@ -288,15 +305,18 @@ class OceananigansDataProfile(LESData):
             self,
             filepath = '',
             datetime_origin = '2000-01-01T00:00:00',
+            hoursince = None,
             ):
         """Initialization
 
         :filepath:        (str) path of the Oceananigans profile data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
+        :hoursince:       (bool or scalar) use hours since some reference time as the time coordinate
 
         """
         super(OceananigansDataProfile, self).__init__(filepath)
         self._datetime_origin = datetime_origin
+        self._hoursince = hoursince
         self.dataset = self._load_dataset()
 
     def _load_dataset(
@@ -324,7 +344,7 @@ class OceananigansDataProfile(LESData):
         # load all variables into an xarray.Dataset
         with h5py.File(self._filepath, 'r') as fdata:
             iters_sorted = get_iters_sorted(fdata)
-            time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin)
+            time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin, hours=self._hoursince)
             gz   = get_z(fdata)
             gzi  = get_zi(fdata)
             gnz  = gz.size
@@ -359,6 +379,7 @@ class OceananigansDataVolume(LESData):
             self,
             filepath = '',
             datetime_origin = '2000-01-01T00:00:00',
+            hoursince = None,
             latlon = False,
             fieldname = None,
             timeindex = None,
@@ -367,6 +388,7 @@ class OceananigansDataVolume(LESData):
 
         :filepath:        (str) path of the Oceananigans volume data file
         :datetime_origin: (scalar) reference date passed to pandas.to_datetime()
+        :hoursince:       (bool or scalar) use hours since some reference time as the time coordinate
         :latlon:          (bool) Latitude-Longitude grid
         :fieldname:       (str) name of field to load if given
         :timeindex:       (int) time index to load if given
@@ -374,6 +396,7 @@ class OceananigansDataVolume(LESData):
         """
         super(OceananigansDataVolume, self).__init__(filepath)
         self._datetime_origin = datetime_origin
+        self._hoursince = hoursince
         self._latlon = latlon
         self.dataset = self._load_dataset(fieldname, timeindex)
 
@@ -415,7 +438,7 @@ class OceananigansDataVolume(LESData):
         # load all variables into an xarray.Dataset
         with h5py.File(self._filepath, 'r') as fdata:
             iters_sorted = get_iters_sorted(fdata, timeindex=timeindex)
-            time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin)
+            time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin, hours=self._hoursince)
             gx   = get_x(fdata, latlon=self._latlon)
             gxi  = get_xi(fdata, latlon=self._latlon)
             gnx  = gx.size
