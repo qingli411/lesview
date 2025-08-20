@@ -105,35 +105,51 @@ def get_bld_maxNN(NN, zdim='zi', nr=[0,-1]):
                             'units': 'm'})
     return bld
 
-def get_bld_nuh(nuh, nuh_bg=1e-5, zdim='zi'):
+def get_bld_crit(var, var_crit=1e-6, zdim='z'):
     """Find the boundary layer depth defined as the depth where
-       the turbulent diffusivity first drops to a background value
+       a turbulence statistic approaches zero (equals a small
+       critical value.
 
-    :nuh: (xarray.DataArray) turbulent diffusivity in m^2/s
-    :nuh_bg: (float, optional) background diffusivity in m^2/s
+    :var: (xarray.DataArray) turbulence statistics
+    :var_crit: (float, optional) critial value
     :zdim: (str, optional) name of the z coordinates
     :returns: (xarray.DataArray) boundary layer depth in m
 
     """
-    nu = nuh.values
-    z = nuh.coords[zdim].values
+    varname = var.attrs['long_name']
+    vvar = var.values
+    z = var.coords[zdim].values
     nz = z.size
-    nt = nuh.time.shape[0]
+    nt = var.time.shape[0]
     bld_val = np.zeros(nt)
-    for i in np.arange(nt):
-        idxlist = np.where(nuh[:,i]<nuh_bg)[0]
-        idxlist = idxlist[idxlist<nz-1]
-        if idxlist.size==0:
-            bld[i] = z[0]
-        elif np.max(idxlist)<nz-2:
-            idx1 = np.max(idxlist)
-            idx0 = idx1+1
-            bld_val[i] = z[idx0] - (z[idx0]-z[idx1]) * \
-                     (nuh[idx0,i]-nuh_bg) / (nuh[idx0,i]-nuh[idx1,i])
-        else:
-            bld_val[i] = z[-1]
-    bld = xr.DataArray(np.abs(bld_val), dims=['time'], coords={'time': nuh.time},
-                      attrs={'long_name': 'boundary layer depth (nuh threshold)',
+    if z[0] < z[-1]:
+        for i in np.arange(nt):
+            idxlist = np.where(np.abs(vvar[:,i])<np.abs(var_crit))[0]
+            idxlist = idxlist[idxlist<nz-1]
+            if idxlist.size==0:
+                bld_val[i] = z[0]
+            elif np.max(idxlist)<=nz-2:
+                idx1 = np.max(idxlist)
+                idx0 = idx1+1
+                bld_val[i] = z[idx0] - (z[idx0]-z[idx1]) * \
+                    (var[idx0,i]-var_crit) / (var[idx0,i]-var[idx1,i])
+            else:
+                bld_val[i] = z[-1]
+    else:
+        for i in np.arange(nt):
+            idxlist = np.where(np.abs(vvar[:,i])<np.abs(var_crit))[0]
+            idxlist = idxlist[idxlist>0]
+            if idxlist.size==0:
+                bld_val[i] = z[-1]
+            elif np.min(idxlist)>1:
+                idx1 = np.min(idxlist)
+                idx0 = idx1-1
+                bld_val[i] = z[idx0] - (z[idx0]-z[idx1]) * \
+                    (var[idx0,i]-var_crit) / (var[idx0,i]-var[idx1,i])
+            else:
+                bld_val[i] = z[0]
+    bld = xr.DataArray(np.abs(bld_val), dims=['time'], coords={'time': var.time},
+                      attrs={'long_name': 'boundary layer depth (threshold of {:s}={:g})'.format(varname, var_crit),
                             'units': 'm'})
     return bld
 
@@ -148,27 +164,7 @@ def get_bld_tke(tke, tke_crit=1e-7, zdim='zi'):
     :returns: (xarray.DataArray) boundary layer depth in m
 
     """
-    e = tke.values
-    z = tke.coords[zdim].values
-    nz = z.size
-    nt = tke.time.shape[0]
-    bld_val = np.zeros(nt)
-    for i in np.arange(nt):
-        idxlist = np.where(tke[:,i]<tke_crit)[0]
-        idxlist = idxlist[idxlist<nz-1]
-        if idxlist.size==0:
-            bld_val[i] = z[0]
-        elif np.max(idxlist)<nz-2:
-            idx1 = np.max(idxlist)
-            idx0 = idx1+1
-            bld_val[i] = z[idx0] - (z[idx0]-z[idx1]) * \
-                (tke[idx0,i]-tke_crit) / (tke[idx0,i]-tke[idx1,i])
-        else:
-            bld_val[i] = z[-1]
-    bld = xr.DataArray(np.abs(bld_val), dims=['time'], coords={'time': tke.time},
-                      attrs={'long_name': 'boundary layer depth (TKE threshold)',
-                            'units': 'm'})
-    return bld
+    return get_bld_crit(tke, tke_crit, zdim)
 
 def stretch_bl(ds, h, zdim='z'):
     """Stretch in depth direction according to the boundary layer depth
