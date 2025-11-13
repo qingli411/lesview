@@ -94,7 +94,7 @@ def _plot_box(dxy, dxy2, dxz, dyz, view,
         ax_inset = ax.inset_axes([0.75, 0.85, 0.3, 0.03])
         cb = plt.colorbar(im, cax=ax_inset, orientation='horizontal', label='{:s} [{:s}]'.format(dxz.attrs['long_name'], dxz.attrs['units']), ticks=[im.levels[0], im.levels[int(im.levels.size/2)], im.levels[-1]])
     if add_timestamp:
-        ax.text2D(0.05, 0.85, timestr, transform=ax.transAxes, fontsize=12, va='top', ha='left')
+        ax.text2D(0.05, 0.85, timestr, transform=ax.transAxes, fontsize=11, va='top', ha='left')
 
     return im
 
@@ -122,7 +122,13 @@ def plot_box_field(
     """
     # select time slice
     dat = da.isel(time=itime)
-    timestr = da.time.dt.strftime('%m-%d %H:%M:%S').data[itime]
+    timetype = type(da.time.data[0])
+    if timetype == np.datetime64:
+        timestr = da.time.dt.strftime('%m-%d %H:%M:%S').data[itime]
+    elif timetype == np.float64:
+        timestr = '$t = {:05.2f}$ h'.format(da.time.data[itime])
+    else:
+        raise ValueError('Invalid time dimension')
 
     # check coordinates
     xmin, xmax, xc, isxi = _check_x_coordinate(dat)
@@ -213,7 +219,13 @@ def plot_box_slice(
 
     dxz  = da_xz.isel(time=itime)
     dyz  = da_yz.isel(time=itime)
-    timestr = da_xz.time.dt.strftime('%m-%d %H:%M:%S').data[itime]
+    timetype = type(da_xy.time.data[0])
+    if timetype == np.datetime64:
+        timestr = da_xy.time.dt.strftime('%m-%d %H:%M:%S').data[itime]
+    elif timetype == np.float64:
+        timestr = '$t = {:05.2f}$ h'.format(da_xy.time.data[itime])
+    else:
+        raise ValueError('Invalid time dimension')
 
     # check coordinates
     xmin, xmax, xc, isxi = _check_x_coordinate(dxz)

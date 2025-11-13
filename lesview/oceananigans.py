@@ -59,7 +59,7 @@ def get_time(
     for i, it in enumerate(iters):
         time_arr[i] = davar[it][()]
     time = pd.to_datetime(time_arr, unit='s', origin=origin)
-    if hours is None:
+    if hours is None or hours is False:
         return time
     else:
         if hours is True:
