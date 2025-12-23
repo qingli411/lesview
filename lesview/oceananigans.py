@@ -334,7 +334,10 @@ class OceananigansDataProfile(LESData):
             nz = z.size
             var_arr = np.zeros([nz, nt])
             for i, it in enumerate(iters):
-                var_arr[:,i] = davar[it][()].flatten()
+                if it in davar.keys():
+                    var_arr[:,i] = davar[it][()].flatten()
+                else:
+                    var_arr[:,i] = np.nan
             var = xr.DataArray(
                 var_arr,
                 dims=(z.dims[0], 'time'),
