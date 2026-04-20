@@ -81,6 +81,7 @@ def get_grid(
         halo_name,
         out_name,
         out_units,
+        in_subname=None,
         ):
     """Get the spatial dimension
 
@@ -89,13 +90,16 @@ def get_grid(
 
     """
     H = data['grid'][halo_name][()]
-    d = data['grid'][in_name][()][H:-H]
+    if in_subname is None:
+        d = data['grid'][in_name][()][H:-H]
+    else:
+        d = data['grid'][in_name][in_subname][()][H:-H]
     d = xr.DataArray(
         d,
         dims=(out_name),
         coords={out_name: np.arange(d.size)},
         attrs={'long_name': out_name, 'units': out_units})
-    return d
+    return d, H
 
 def get_x(
         data,
@@ -170,7 +174,7 @@ def get_z(
     :return: (xarray.DataArray) z
 
     """
-    return get_grid(data, 'zᵃᵃᶜ', 'Hz', 'z', 'm')
+    return get_grid(data, 'z', 'Hz', 'z', 'm', 'cᵃᵃᶜ')
 
 def get_zi(
         data,
@@ -181,7 +185,7 @@ def get_zi(
     :return: (xarray.DataArray) z
 
     """
-    return get_grid(data, 'zᵃᵃᶠ', 'Hz', 'zi', 'm')
+    return get_grid(data, 'z', 'Hz', 'zi', 'm', 'cᵃᵃᶠ')
 
 def var_longname(
         varname,
@@ -193,54 +197,54 @@ def var_longname(
 
     """
     var_longname = {
-            'T':    '$T$',
-            'S':    'psu',
-            'η':    '$\eta$',
-            'b':    '$b$',
-            'B':    '$\overline{b}$',
-            'bb':   '$\overline{{b^\prime}^2}$',
-            'tt':   '$\overline{{T^\prime}^2}$',
-            'e':    '$e$',
-            'p':    '$p$',
-            'u':    '$u$',
-            'U':    '$\overline{u}$',
-            'ub':   '$\overline{u^\prime b^\prime}$',
-            'uu':   '$\overline{{u^\prime}^2}$',
-            'uv':   '$\overline{u^\prime v^\prime}$',
-            'v':    '$v$',
-            'V':    '$\overline{v}$',
-            'vb':   '$\overline{v^prime b^\prime}$',
-            'vv':   '$\overline{{v^\prime}^2}$',
-            'w':    '$w$',
-            'W':    '$\overline{w}$',
-            'wb':   '$\overline{w^\prime b^\prime}$',
-            'wt':   '$\overline{w^\prime T^\prime}$',
-            'ws':   '$\overline{w^\prime S^\prime}$',
-            'wu':   '$\overline{u^\prime w^\prime}$',
-            'wv':   '$\overline{v^\prime w^\prime}$',
-            'ww':   '$\overline{{w^\prime}^2}$',
-            'ubsb': '$\overline{u^\prime b^\prime}_{sgs}$',
-            'vbsb': '$\overline{v^\prime b^\prime}_{sgs}$',
-            'wbsb': '$\overline{w^\prime b^\prime}_{sgs}$',
-            'wtsb': '$\overline{w^\prime T^\prime}_{sgs}$',
-            'wssb': '$\overline{w^\prime S^\prime}_{sgs}$',
-            'uvsb': '$\overline{u^\prime v^\prime}_{sgs}$',
-            'wusb': '$\overline{u^\prime w^\prime}_{sgs}$',
-            'wvsb': '$\overline{v^\prime w^\prime}_{sgs}$',
-            'w3':   '$\overline{{w^\prime}^3}$',
-            'νₑ':   '$\\nu_e$',
+            'T':    r'$T$',
+            'S':    r'psu',
+            'η':    r'$\eta$',
+            'b':    r'$b$',
+            'B':    r'$\overline{b}$',
+            'bb':   r'$\overline{{b^\prime}^2}$',
+            'tt':   r'$\overline{{T^\prime}^2}$',
+            'e':    r'$e$',
+            'p':    r'$p$',
+            'u':    r'$u$',
+            'U':    r'$\overline{u}$',
+            'ub':   r'$\overline{u^\prime b^\prime}$',
+            'uu':   r'$\overline{{u^\prime}^2}$',
+            'uv':   r'$\overline{u^\prime v^\prime}$',
+            'v':    r'$v$',
+            'V':    r'$\overline{v}$',
+            'vb':   r'$\overline{v^prime b^\prime}$',
+            'vv':   r'$\overline{{v^\prime}^2}$',
+            'w':    r'$w$',
+            'W':    r'$\overline{w}$',
+            'wb':   r'$\overline{w^\prime b^\prime}$',
+            'wt':   r'$\overline{w^\prime T^\prime}$',
+            'ws':   r'$\overline{w^\prime S^\prime}$',
+            'wu':   r'$\overline{u^\prime w^\prime}$',
+            'wv':   r'$\overline{v^\prime w^\prime}$',
+            'ww':   r'$\overline{{w^\prime}^2}$',
+            'ubsb': r'$\overline{u^\prime b^\prime}_{sgs}$',
+            'vbsb': r'$\overline{v^\prime b^\prime}_{sgs}$',
+            'wbsb': r'$\overline{w^\prime b^\prime}_{sgs}$',
+            'wtsb': r'$\overline{w^\prime T^\prime}_{sgs}$',
+            'wssb': r'$\overline{w^\prime S^\prime}_{sgs}$',
+            'uvsb': r'$\overline{u^\prime v^\prime}_{sgs}$',
+            'wusb': r'$\overline{u^\prime w^\prime}_{sgs}$',
+            'wvsb': r'$\overline{v^\prime w^\prime}_{sgs}$',
+            'w3':   r'$\overline{{w^\prime}^3}$',
+            'νₑ':   r'$\\nu_e$',
             'tke_advective_flux':   'TKE advective flux',
             'tke_buoyancy_flux':    'TKE buoyancy flux',
             'tke_dissipation':      'TKE dissipation',
             'tke_pressure_flux':    'TKE pressure flux',
             'tke_shear_production': 'TKE shear producton',
-            'wbsc': '$\overline{w^\prime b^\prime}_{sc}$',
-            'uusc': '$\overline{{u^\prime}^2}_{sc}$',
-            'vvsc': '$\overline{{u^\prime}^2}_{sc}$',
-            'wwsc': '$\overline{{u^\prime}^2}_{sc}$',
-            'uvsc': '$\overline{u^\prime v^\prime}_{sc}$',
-            'wusc': '$\overline{u^\prime w^\prime}_{sc}$',
-            'wvsc': '$\overline{v^\prime w^\prime}_{sc}$',
+            'wbsc': r'$\overline{w^\prime b^\prime}_{sc}$',
+            'uusc': r'$\overline{{u^\prime}^2}_{sc}$',
+            'vvsc': r'$\overline{{u^\prime}^2}_{sc}$',
+            'wwsc': r'$\overline{{u^\prime}^2}_{sc}$',
+            'uvsc': r'$\overline{u^\prime v^\prime}_{sc}$',
+            'wusc': r'$\overline{u^\prime w^\prime}_{sc}$',
+            'wvsc': r'$\overline{v^\prime w^\prime}_{sc}$',
             }
     if varname in var_longname.keys():
         return var_longname[varname]
@@ -258,54 +262,54 @@ def var_units(
 
     """
     var_units = {
-            'T':    '$^\circ$C',
-            'S':    'psu',
-            'η':    'm',
-            'b':    'm/s$^2$',
-            'B':    'm/s$^2$',
-            'bb':   'm$^2$/s$^4$',
-            'tt':   '$^\circ$C$^2$',
-            'e':    'm$^2$/s$^2$',
-            'p':    'm$^2$/s$^2$',
-            'u':    'm/s',
-            'U':    'm/s',
-            'ub':   'm$^2$/s$^3$',
-            'uu':   'm$^2$/s$^2$',
-            'uv':   'm$^2$/s$^2$',
-            'v':    'm/s',
-            'V':    'm/s',
-            'vb':   'm$^2$/s$^3$',
-            'vv':   'm$^2$/s$^2$',
-            'w':    'm/s',
-            'W':    'm/s',
-            'wb':   'm$^2$/s$^3$',
-            'wt':   'm/s $^\circ$C',
-            'ws':   'm/s psu',
-            'wu':   'm$^2$/s$^2$',
-            'wv':   'm$^2$/s$^2$',
-            'ww':   'm$^2$/s$^2$',
-            'ubsb': 'm$^2$/s$^3$',
-            'vbsb': 'm$^2$/s$^3$',
-            'wbsb': 'm$^2$/s$^3$',
-            'wtsb': 'm/s $^\circ$C',
-            'wssb': 'm/s psu',
-            'uvsb': 'm$^2$/s$^2$',
-            'wusb': 'm$^2$/s$^2$',
-            'wvsb': 'm$^2$/s$^2$',
-            'w3':   'm$^3$/s$^3$',
-            'νₑ':   'm$^2$/s',
-            'tke_advective_flux':   'm$^3$/s$^3$',
-            'tke_buoyancy_flux':    'm$^2$/s$^3$',
-            'tke_dissipation':      'm$^2$/s$^3$',
-            'tke_pressure_flux':    'm$^3$/s$^3$',
-            'tke_shear_production': 'm$^2$/s$^3$',
-            'wbsc': 'm$^2$/s$^3$',
-            'uusc': 'm$^2$/s$^2$',
-            'vvsc': 'm$^2$/s$^2$',
-            'wwsc': 'm$^2$/s$^2$',
-            'uvsc': 'm$^2$/s$^2$',
-            'wusc': 'm$^2$/s$^2$',
-            'wvsc': 'm$^2$/s$^2$',
+            'T':    r'$^\circ$C',
+            'S':    r'psu',
+            'η':    r'm',
+            'b':    r'm/s$^2$',
+            'B':    r'm/s$^2$',
+            'bb':   r'm$^2$/s$^4$',
+            'tt':   r'$^\circ$C$^2$',
+            'e':    r'm$^2$/s$^2$',
+            'p':    r'm$^2$/s$^2$',
+            'u':    r'm/s',
+            'U':    r'm/s',
+            'ub':   r'm$^2$/s$^3$',
+            'uu':   r'm$^2$/s$^2$',
+            'uv':   r'm$^2$/s$^2$',
+            'v':    r'm/s',
+            'V':    r'm/s',
+            'vb':   r'm$^2$/s$^3$',
+            'vv':   r'm$^2$/s$^2$',
+            'w':    r'm/s',
+            'W':    r'm/s',
+            'wb':   r'm$^2$/s$^3$',
+            'wt':   r'm/s $^\circ$C',
+            'ws':   r'm/s psu',
+            'wu':   r'm$^2$/s$^2$',
+            'wv':   r'm$^2$/s$^2$',
+            'ww':   r'm$^2$/s$^2$',
+            'ubsb': r'm$^2$/s$^3$',
+            'vbsb': r'm$^2$/s$^3$',
+            'wbsb': r'm$^2$/s$^3$',
+            'wtsb': r'm/s $^\circ$C',
+            'wssb': r'm/s psu',
+            'uvsb': r'm$^2$/s$^2$',
+            'wusb': r'm$^2$/s$^2$',
+            'wvsb': r'm$^2$/s$^2$',
+            'w3':   r'm$^3$/s$^3$',
+            'νₑ':   r'm$^2$/s',
+            'tke_advective_flux':   r'm$^3$/s$^3$',
+            'tke_buoyancy_flux':    r'm$^2$/s$^3$',
+            'tke_dissipation':      r'm$^2$/s$^3$',
+            'tke_pressure_flux':    r'm$^3$/s$^3$',
+            'tke_shear_production': r'm$^2$/s$^3$',
+            'wbsc': r'm$^2$/s$^3$',
+            'uusc': r'm$^2$/s$^2$',
+            'vvsc': r'm$^2$/s$^2$',
+            'wwsc': r'm$^2$/s$^2$',
+            'uvsc': r'm$^2$/s$^2$',
+            'wusc': r'm$^2$/s$^2$',
+            'wvsc': r'm$^2$/s$^2$',
             }
     if varname in var_units.keys():
         return var_units[varname]
@@ -350,14 +354,14 @@ class OceananigansDataProfile(LESData):
 
         """
         # function for loading one variable
-        def get_vertical_profile(data, varname, time, z, iters):
+        def get_vertical_profile(data, varname, time, z, Hz, iters):
             davar = data['timeseries'][varname]
             nt = len(iters)
             nz = z.size
             var_arr = np.zeros([nz, nt])
             for i, it in enumerate(iters):
                 if it in davar.keys():
-                    var_arr[:,i] = davar[it][()].flatten()
+                    var_arr[:,i] = davar[it][()][Hz:-Hz].flatten()
                 else:
                     var_arr[:,i] = np.nan
             var = xr.DataArray(
@@ -370,10 +374,10 @@ class OceananigansDataProfile(LESData):
         with h5py.File(self._filepath, 'r') as fdata:
             iters_sorted = get_iters_sorted(fdata)
             time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin, hours=self._hoursince)
-            gz   = get_z(fdata)
-            gzi  = get_zi(fdata)
-            gnz  = gz.size
-            gnzi = gzi.size
+            gz, Hz = get_z(fdata)
+            gzi, _ = get_zi(fdata)
+            gnz  = gz.size + 2*Hz
+            gnzi = gzi.size + 2*Hz
             # define output dataset
             out = xr.Dataset()
             for varname in fdata['timeseries'].keys():
@@ -387,7 +391,7 @@ class OceananigansDataProfile(LESData):
                 else:
                     print('Variable \'{:}\' has dimension {:d}. Skipping.'.format(varname, ndvar))
                     continue
-                out[varname] = get_vertical_profile(fdata, varname, time, z, iters_sorted)
+                out[varname] = get_vertical_profile(fdata, varname, time, z, Hz, iters_sorted)
         return out
 
 #--------------------------------
@@ -438,14 +442,28 @@ class OceananigansDataVolume(LESData):
 
         """
         # function for loading one variable
-        def get_volume(data, varname, time, x, y, z, iters):
+        def get_volume(data, varname, time, x, y, z, Hx, Hy, Hz, iters):
             davar = data['timeseries'][varname]
             nt = len(iters)
             tlist = list(davar.keys())
             nz, ny, nx = davar[tlist[0]][()].shape
+            izs = iys = ixs = 0
+            ize = iye = ixe = 1
+            if nz != 1:
+                izs = Hz
+                ize = -Hz
+                nz -= 2*Hz
+            if ny != 1:
+                iys = Hy
+                iye = -Hy
+                ny -= 2*Hy
+            if nx != 1:
+                ixs = Hx
+                ixe = -Hx
+                nx -= 2*Hx
             var_arr = np.zeros([nz, ny, nx, nt])
             for i, it in enumerate(iters):
-                var_arr[:,:,:,i] = davar[it][()]
+                var_arr[:,:,:,i] = davar[it][()][izs:ize, iys:iye, ixs:ixe]
             var = xr.DataArray(
                 var_arr,
                 dims=(z.dims[0], y.dims[0], x.dims[0], 'time'),
@@ -464,18 +482,27 @@ class OceananigansDataVolume(LESData):
         with h5py.File(self._filepath, 'r') as fdata:
             iters_sorted = get_iters_sorted(fdata, timeindex=timeindex)
             time = get_time(fdata, iters=iters_sorted, origin=self._datetime_origin, hours=self._hoursince)
-            gx   = get_x(fdata, latlon=self._latlon)
-            gxi  = get_xi(fdata, latlon=self._latlon)
+            gx, Hx = get_x(fdata, latlon=self._latlon)
+            gxi, _ = get_xi(fdata, latlon=self._latlon)
             gnx  = gx.size
             gnxi = gxi.size
-            gy   = get_y(fdata, latlon=self._latlon)
-            gyi  = get_yi(fdata, latlon=self._latlon)
+            gy, Hy = get_y(fdata, latlon=self._latlon)
+            gyi, _ = get_yi(fdata, latlon=self._latlon)
             gny  = gy.size
             gnyi = gyi.size
-            gz   = get_z(fdata)
-            gzi  = get_zi(fdata)
+            gz, Hz = get_z(fdata)
+            gzi, _ = get_zi(fdata)
             gnz  = gz.size
             gnzi = gzi.size
+            if gnx != 1:
+                gnx  += 2*Hx
+                gnxi += 2*Hx
+            if gny != 1:
+                gny  += 2*Hy
+                gnyi +=+ 2*Hy
+            if gnz != 1:
+                gnz  += 2*Hz
+                gnzi += 2*Hz
             # define output dataset
             out = xr.Dataset()
             if fieldname is None:
@@ -516,10 +543,10 @@ class OceananigansDataVolume(LESData):
                         x = gx
                 else:
                     raise ValueError('Invalid x coordinate')
-                da = get_volume(fdata, varname, time, x, y, z, iters_sorted)
+                da = get_volume(fdata, varname, time, x, y, z, Hx, Hy, Hz, iters_sorted)
                 for dname in ['zslice', 'yslice', 'xslice']:
                     if dname in da.coords:
-                        da = da.drop(labels=dname)
+                        da = da.squeeze(dname, drop=True)
                 out[varname] = da
         return out
 
