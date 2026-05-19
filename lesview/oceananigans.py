@@ -245,6 +245,7 @@ def var_longname(
             'uvsc': r'$\overline{u^\prime v^\prime}_{sc}$',
             'wusc': r'$\overline{u^\prime w^\prime}_{sc}$',
             'wvsc': r'$\overline{v^\prime w^\prime}_{sc}$',
+            'w3sc': r'$\overline{{u^\prime}^3}_{sc}$',
             }
     if varname in var_longname.keys():
         return var_longname[varname]
@@ -310,6 +311,7 @@ def var_units(
             'uvsc': r'm$^2$/s$^2$',
             'wusc': r'm$^2$/s$^2$',
             'wvsc': r'm$^2$/s$^2$',
+            'w3sc': r'm$^3$/s$^3$',
             }
     if varname in var_units.keys():
         return var_units[varname]
