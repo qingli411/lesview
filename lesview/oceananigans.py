@@ -510,7 +510,7 @@ class OceananigansDataVolume(LESData):
             if fieldname is None:
                 vlist = fdata['timeseries'].keys()
             else:
-                vlist = list(fieldname)
+                vlist = fieldname.split()
             for varname in vlist:
                 davar = fdata['timeseries'][varname]
                 tlist = list(davar.keys())
